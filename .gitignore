@@ -1,1 +1,7 @@
 .env
+/log
+.idea
+
+/docker/mariadb/data
+/docker/clickhouse/data
+/vendor

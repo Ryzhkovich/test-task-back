@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  nginx:
+    container_name: '${PROJECT_NAME}-nginx'
+    restart: always
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/sites:/etc/nginx/conf.d
+      - ./docker/logs/nginx/:/var/log/nginx
+      - ./docker/nginx/nginxconfig.io:/etc/nginx/nginxconfig.io
+      - ./:${WORKDIR}
+    build:
+      context: ./docker/nginx
+      args:
+        WORKDIR: ${WORKDIR}
+    ports:
+      - "${NGINX_HTTP_PORT}:80"
+    links:
+      - php
+      - mariadb
+  php:
+    container_name: '${PROJECT_NAME}-php'
+    restart: always
+    build:
+      context: ./docker/php/
+      args:
+        WORKDIR: ${WORKDIR}
+    volumes:
+#      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ./docker/logs/php:/var/log/php
+      - ./:${WORKDIR}
+    cap_add:
+      - SYS_NICE
+      - DAC_READ_SEARCH
+  mariadb:
+    container_name: '${PROJECT_NAME}-mariadb'
+    build: './docker/mariadb'
+    ports:
+      - '${MARIADB_PORT}:3306'
+    volumes:
+      - ./docker/mariadb/data:/var/lib/mysql
+      - ./docker/mariadb/init:/docker-entrypoint-initdb.d
+      - ./docker/logs/mariadb:/var/log/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MARIADB_DATABASE}
+      MYSQL_USER: ${MARIADB_USER}
+      MYSQL_PASSWORD: ${MARIADB_PASSWORD}
+    command: '--character-set-server=utf8 --collation-server=utf8_general_ci && ./docker-entrypoint-initdb.d/init.sh'
+  clickhouse:
+    image: yandex/clickhouse-server
+    container_name: '${PROJECT_NAME}-clickhouse'
+    ports:
+      - '8123:8123'
+      - '9001:9001'
+    volumes:
+      - ./docker/clickhouse/data:/var/lib/clickhouse
+      - ./docker/clickhouse/config/config.xml:/etc/clickhouse-server/config.xml
+      - ./docker/clickhouse/config/users.xml:/etc/clickhouse-server/users.xml
+      - ./docker/logs/clickhouse:/var/log/clickhouse-server
+      - ./docker/clickhouse/init:/docker-entrypoint-initdb.d
+  rabbitmq:
+    image: rabbitmq:3.11.5-management
+    container_name: '${PROJECT_NAME}-rabbitmq'
+    ports:
+      - "5672:5672"
+      - "15672:15672"

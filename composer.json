@@ -3,9 +3,9 @@
         "php": "8.1.*",
         "ext-curl": "*",
         "ext-fileinfo": "*",
-        "ext-http": "*",
         "ext-iconv": "*",
         "ext-intl": "*",
+        "ext-sockets": "*",
         "ext-json": "*",
         "ext-libxml": "*",
         "ext-mysqli": "*",
@@ -17,10 +17,11 @@
         "ext-zip": "*",
         "graylog2/gelf-php": "^1.7",
         "ext-mbstring": "*",
-        "smi2/phpclickhouse": "*"
+        "smi2/phpclickhouse": "*",
+        "php-amqplib/php-amqplib": "*"
     },
     "autoload": {
-        "classmap": ["vendor/"]
+        "classmap": ["app/", "vendor/"]
     },
     "config": {
         "preferred-install": "dist",
